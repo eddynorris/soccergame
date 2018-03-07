@@ -1,10 +1,20 @@
 enchant();
+enchant.Sound.enabledInMobileSafari = true;
+
+if(location.protocol == 'file:'){
+    enchant.ENV.USE_WEBAUDIO = false;
+    console.log('1');
+}
 window.onload = function() {
     var game = new Core(2400,1100);
 
-    game.preload('jugadorazul.png','jugadorbr.png','estadiog.png','pelota.png');
+    game.preload('jugadorazul.png','jugadorbr.png','estadiog.png','pelota.png','gol.wav');
     // chara1.png を読み込む
     game.keybind(' '.charCodeAt(0), 'a');
+     game.fps = 30;
+    var start = +new Date();
+    var time =  00 * 60 * 10;
+
     game.onload = function() {
         // Bear クラス (パペット) をつくる
         var Player = enchant.Class.create(enchant.Sprite, {
@@ -72,7 +82,8 @@ window.onload = function() {
               for (var i = 0; i < 5; i++) {
            makeSmiley(player);
        }
-      
+       hora();
+    
           // Reassign keys.
         game.keybind(87, 'up');     // 87 is the ASCII code for 'W'.
         game.keybind(65, 'left');   // 65 is the ASCII code for 'A'.
@@ -82,6 +93,13 @@ window.onload = function() {
         // Add listener to the circle for the ENTER_FRAME event to move it.
         player.addEventListener(Event.ENTER_FRAME, function () {
             // right/left
+                 if (pel.x>1500 && pel.y>500 && pel.y<700) {
+        game.assets['gol.wav'].play()
+        if (pel.x>1700 && pel.y>500 && pel.y<700) {
+        pel.x = Math.random() * (1200 - 750) + 700;
+        pel.y = Math.random() * (600 - 200) + 300; 
+         }
+      }
      if (game.input.left)  {
                 
                 if (610< player.x) {
@@ -102,12 +120,13 @@ window.onload = function() {
                 player.scaleX =  1;
                  if (player.intersect(pel)) {
                    if (game.input.a) {
-                    for (var i = 0; i < 4; i++) {
-                     pel.x += 25;
-                    }
+                  
+                     pel.x += 100;
+                    
                     
                   }
                   else{
+
                     pel.x += 4;
                   }
                   }
@@ -151,7 +170,50 @@ window.onload = function() {
     game.start();
 
 
+function  hora(){
+   var countdown = false;
+        var label = new Label();
+        label.font = "100px Rockwell"
+       label.color = "lightgray"
+        label.x = 200;
+        label.y = 44;
+        game.rootScene.addChild(label);
 
+        var sublabel = new Label();
+        sublabel.font = "64px Rockwell"
+        sublabel.color = "lightgray"
+        sublabel.x = 450;
+        sublabel.y = 80;
+        game.rootScene.addChild(sublabel);
+
+        first_frame = true;
+        game.rootScene.on("enterframe", function(evt) {
+            if(first_frame){
+                start = +new Date();
+                first_frame = false;
+            }
+            rest = time + Math.floor(((+new Date()) - start) / 100) ;
+            label.text = getMinutes(rest) + ":" + getSeconds(rest);
+            sublabel.text = "." + getSubSeconds(rest);
+            if(rest == 450.00){
+                game.end();
+            }
+        });
+}
+  function getSeconds(rest) {
+        var text = "00" + Math.floor(rest / 10) % 60;
+        return text.substr(text.length - 2, 2);
+    }
+
+    function getMinutes(rest) {
+        var text = "00" + Math.floor(rest / 10 / 60);
+        return text.substr(text.length - 2, 2);
+    }
+
+    function getSubSeconds(rest) {
+        var text = "0" + rest % 10;
+        return text.substr(text.length - 1, 1);
+    }
 
  function makeSmiley(hero) {
         var smiley = new Sprite(44,80);
