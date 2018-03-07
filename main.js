@@ -4,7 +4,7 @@ window.onload = function() {
 
     game.preload('jugadorazul.png','jugadorbr.png','estadiog.png','pelota.png');
     // chara1.png を読み込む
-    
+    game.keybind(' '.charCodeAt(0), 'a');
     game.onload = function() {
         // Bear クラス (パペット) をつくる
         var Player = enchant.Class.create(enchant.Sprite, {
@@ -18,7 +18,16 @@ window.onload = function() {
             this.image = game.assets['jugadorazul.png'];
         }  
         });
-     
+         var pelota = enchant.Class.create(enchant.Sprite, {
+            initialize: function(width, height) {
+                enchant.Sprite.call(this, width, height);
+           this.x = Math.random() * (1200 - 750) + 700;
+           this.y = Math.random() * (600 - 200) + 200;
+           this.vx = 0;
+        
+            this.image = game.assets['pelota.png'];
+        }  
+        });
          var Player2 = enchant.Class.create(enchant.Sprite, {
             initialize: function(width, height) {
                 enchant.Sprite.call(this, width, height);
@@ -44,25 +53,26 @@ window.onload = function() {
             
 
        var stage = new Group();
+       var pel = new pelota(30,35);
                 // Player クラスのクマを1匹作る
         var est = new estadio(1200,900);
         var player = new Player(50, 80);
        
      stage.addChild(est);
        stage.addChild(player);
+       stage.addChild(pel);
    for (var i = 0; i < 4; i++) {
      var player2= new Player2(50,80);
      stage.addChild(player2);
    }
 
-       var circleSpeed = 5; 
         // 画面に表示する (ひとつだけでる)
           game.rootScene.backgroundColor='#000000';
           game.rootScene.addChild(stage);
               for (var i = 0; i < 5; i++) {
            makeSmiley(player);
        }
-       cogepelota(player);
+      
           // Reassign keys.
         game.keybind(87, 'up');     // 87 is the ASCII code for 'W'.
         game.keybind(65, 'left');   // 65 is the ASCII code for 'A'.
@@ -77,7 +87,9 @@ window.onload = function() {
                 if (610< player.x) {
                       player.x -= 3;
                 player.scaleX = -1;
-                  
+                  if (player.intersect(pel)) {
+                    pel.x -= 4;
+                  }
                 }
                 else{
                 player.x-=0;
@@ -88,6 +100,17 @@ window.onload = function() {
               if (player.x<1700) {
                   player.x += 3;
                 player.scaleX =  1;
+                 if (player.intersect(pel)) {
+                   if (game.input.a) {
+                    for (var i = 0; i < 4; i++) {
+                     pel.x += 25;
+                    }
+                    
+                  }
+                  else{
+                    pel.x += 4;
+                  }
+                  }
               }else{
                 player.x +=0;
               }
@@ -98,15 +121,23 @@ window.onload = function() {
             // up/down
             if (game.input.down && !game.input.up) {
                 player.y += 4;
+                 if (player.intersect(pel)) {
+                    pel.y += 4;
+                  }
                 if (player.y  > 995) {
                     player.y = 990;
+
                 }
             } else if (game.input.up && !game.input.down) {
                 player.y -= 4;
+                 if (player.intersect(pel)) {
+                    pel.y -= 4;
+                  }
                 if (player.y < 200 ) {
                     player.y = 200;
                 }
             }
+
             //Frame settings
     if (!game.input.left && !game.input.right && !game.input.up && !game.input.down) {
                 player.frame = player.anim[0];            
@@ -118,20 +149,8 @@ window.onload = function() {
 
 
     game.start();
-function cogepelota(hero){
-
-    var pelota = new Sprite(111,113);
-        pelota.image = game.assets['pelota.png'];
-        pelota.scaleX=0.25;
-        pelota.scaleY=0.25;
-         pelota.x = Math.random() * (1200 - 600) + 700;
-          pelota.y = Math.random() * (900 - 200) + 200;
-          game.rootScene.addChild(pelota);
-        
 
 
-//----------------------
-  }
 
 
  function makeSmiley(hero) {
@@ -206,7 +225,7 @@ function cogepelota(hero){
             // Check for collision.
             if (smiley.intersect(hero)) {
                 // Game over :-(
-                
+                hero.x -=smiley.speed;
             }
         });
 
