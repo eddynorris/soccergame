@@ -7,14 +7,13 @@ if(location.protocol == 'file:'){
 }
 window.onload = function() {
     var game = new Core(2400,1100);
-
-    game.preload('jugadorazul.png','jugadorbr.png','estadiog.png','pelota.png','gol.wav');
+    game.preload('music.wav','jugadorazul.png','jugadorbr.png','estadiog.png','pelota.png','gol.wav','jugadornr.png','jugadorar.png');
     // chara1.png を読み込む
     game.keybind(' '.charCodeAt(0), 'a');
      game.fps = 30;
     var start = +new Date();
     var time =  00 * 60 * 10;
-
+  var score =0;
     game.onload = function() {
         // Bear クラス (パペット) をつくる
         var Player = enchant.Class.create(enchant.Sprite, {
@@ -32,7 +31,7 @@ window.onload = function() {
             initialize: function(width, height) {
                 enchant.Sprite.call(this, width, height);
            this.x = Math.random() * (1200 - 750) + 700;
-           this.y = Math.random() * (600 - 200) + 200;
+           this.y = Math.random() * (600 - 200) + 500;
            this.vx = 0;
         
             this.image = game.assets['pelota.png'];
@@ -50,6 +49,35 @@ window.onload = function() {
             this.image = game.assets['jugadorazul.png'];
         }  
         });
+               var arquero1 = enchant.Class.create(enchant.Sprite, {
+            initialize: function(width, height) {
+                enchant.Sprite.call(this, width, height);
+           this.x = 650;
+           this.y = 580;
+           this.vx = 0;
+           this.scaleX =1;
+         this.anim   = [0,0,1,1];
+        this.frame  = this.anim[0];
+            this.image = game.assets['jugadorbr.png'];
+        }  
+        });
+
+      var arquero2 = enchant.Class.create(enchant.Sprite, {
+            initialize: function(width, height) {
+                enchant.Sprite.call(this, width, height);
+            this.x = 1700;
+           this.y = 600;
+           this.vx = 0;
+           this.scaleX =-1;
+         
+        this.frame  = [0,0,0,0,1,1,1,1];
+            this.image = game.assets['jugadorar.png'];
+       
+        }  
+        });
+
+
+
 
            var estadio = enchant.Class.create(enchant.Sprite, {
             initialize: function(width, height) {
@@ -71,6 +99,9 @@ window.onload = function() {
                 // Player クラスのクマを1匹作る
         var est = new estadio(1200,900);
         var player = new Player(50, 80);
+        var arq= new arquero1(50,80);
+        var arq2 = new arquero2(29,55);
+     
        stage.addChild(lab);
      stage.addChild(est);
        stage.addChild(player);
@@ -78,40 +109,57 @@ window.onload = function() {
    for (var i = 0; i < 4; i++) {
      var player2= new Player2(50,80);
      stage.addChild(player2);
+        stage.addChild(arq);
+         stage.addChild(arq2);
    }
 
         // 画面に表示する (ひとつだけでる)
           game.rootScene.backgroundColor='#000000';
           game.rootScene.addChild(stage);
               for (var i = 0; i < 5; i++) {
-           makeSmiley(player);
+           makeSmiley(player,pel);
        }
        hora();
-    
+    arq2.tl.moveBy(0, 100, 90)   // move right
+            .scaleTo(-1, 1, 10)      // turn left
+            .moveBy(0, -100, 90)     // move left
+            .scaleTo(-1, 1, 10)       // turn right
+            .loop(); 
           // Reassign keys.
         game.keybind(87, 'up');     // 87 is the ASCII code for 'W'.
         game.keybind(65, 'left');   // 65 is the ASCII code for 'A'.
         game.keybind(83, 'down');   // 83 is the ASCII code for 'S'.
         game.keybind(68, 'right');  // 68 is the ASCII code for 'D'.
 
+
+
         // Add listener to the circle for the ENTER_FRAME event to move it.
         player.addEventListener(Event.ENTER_FRAME, function () {
             // right/left
-       var score =0;
+       game.assets['music.wav'].play();
                  if (pel.x>1500 && pel.y>500 && pel.y<700) {
         game.assets['gol.wav'].play();
-   
-        if (pel.x>1700 && pel.y>500 && pel.y<700) {
+        }else{
+          game.assets['gol.wav'].stop();
+        }
+        if (pel.x>1750 && pel.y>500 && pel.y<700) {
         pel.x = Math.random() * (1200 - 750) + 700;
         pel.y = Math.random() * (600 - 200) + 300; 
-        score += 1;
+        score = score + 1;
         lab.text = "Score :  " + score + "-0";
          }
+
+      
+      if (player.intersect(arq2)) {
+        player.x -= 8; 
+      }
+       if (pel.intersect(arq2)) {
+        pel.x -= 300; 
       }
      if (game.input.left)  {
                 
                 if (610< player.x) {
-                      player.x -= 3;
+                      player.x -= 10;
                 player.scaleX = -1;
                   if (player.intersect(pel)) {
                     pel.x -= 4;
@@ -124,7 +172,7 @@ window.onload = function() {
             //Right
             else if (game.input.right) {
               if (player.x<1700) {
-                  player.x += 3;
+                  player.x += 5;
                 player.scaleX =  1;
                  if (player.intersect(pel)) {
                    if (game.input.a) {
@@ -195,6 +243,7 @@ function  hora(){
         game.rootScene.addChild(sublabel);
 
         first_frame = true;
+
         game.rootScene.on("enterframe", function(evt) {
             if(first_frame){
                 start = +new Date();
@@ -203,9 +252,11 @@ function  hora(){
             rest = time + Math.floor(((+new Date()) - start) / 100) ;
             label.text = getMinutes(rest) + ":" + getSeconds(rest);
             sublabel.text = "." + getSubSeconds(rest);
-            if(rest == 450.00){
+            if(rest == 4500.00){
                 game.end();
             }
+
+       
         });
 }
   function getSeconds(rest) {
@@ -223,10 +274,10 @@ function  hora(){
         return text.substr(text.length - 1, 1);
     }
 
- function makeSmiley(hero) {
-        var smiley = new Sprite(44,80);
-        smiley.image = game.assets['jugadorbr.png'];
-        smiley.anim   = [0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
+ function makeSmiley(hero,pelotita) {
+        var smiley = new Sprite(22,55);
+        smiley.image = game.assets['jugadornr.png'];
+        smiley.anim   = [0,0,1,1,0,0,1,1,0,0,1,1 ];
         smiley.frame  = smiley.anim[0];
         smiley.scaleX=-1;
         // Position smiley in a random corner.
@@ -296,6 +347,10 @@ function  hora(){
             if (smiley.intersect(hero)) {
                 // Game over :-(
                 hero.x -=smiley.speed;
+            }
+            if (smiley.intersect(pelotita)) {
+                // Game over :-(
+                pelotita.x -=smiley.speed+5;
             }
         });
 
