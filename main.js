@@ -61,13 +61,17 @@ window.onload = function() {
             }
         });
             
-
+ var lab = new Label('Score :  0-0');
+        lab.x = 1700;
+        lab.y = 90;
+        lab.color = 'white';
+        lab.font = '40px Arial';
        var stage = new Group();
        var pel = new pelota(30,35);
                 // Player クラスのクマを1匹作る
         var est = new estadio(1200,900);
         var player = new Player(50, 80);
-       
+       stage.addChild(lab);
      stage.addChild(est);
        stage.addChild(player);
        stage.addChild(pel);
@@ -93,11 +97,15 @@ window.onload = function() {
         // Add listener to the circle for the ENTER_FRAME event to move it.
         player.addEventListener(Event.ENTER_FRAME, function () {
             // right/left
+       var score =0;
                  if (pel.x>1500 && pel.y>500 && pel.y<700) {
-        game.assets['gol.wav'].play()
+        game.assets['gol.wav'].play();
+   
         if (pel.x>1700 && pel.y>500 && pel.y<700) {
         pel.x = Math.random() * (1200 - 750) + 700;
         pel.y = Math.random() * (600 - 200) + 300; 
+        score += 1;
+        lab.text = "Score :  " + score + "-0";
          }
       }
      if (game.input.left)  {
